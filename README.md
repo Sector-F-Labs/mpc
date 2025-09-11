@@ -49,48 +49,21 @@ Output: A working `calculator` binary that actually behaves exactly as documente
 
 That's it! The `./configure` script automatically installs dependencies, sets up Ollama, builds MPC, and tests everything.
 
-## Requirements
+## Setup
 
-### Required Dependencies
-- **Clang or GCC** - C compiler
-- **libcurl** - HTTP client library
-- **jansson** - JSON parsing library
-
-### LLM Backend (choose one)
-- **[Ollama](https://ollama.ai/)** - Local LLM (recommended for privacy)
-- **Google Gemini API** - Remote API (requires API key)
-
-## Installation
-
-### Dependencies
-
-### Automatic Setup (Recommended)
 ```bash
 ./configure
 ```
 
-The configure script automatically detects your system and:
-- Installs dependencies (libcurl, jansson, ollama)
-- Builds MPC
-- Sets up LLM backend with codellama:7b
-- Runs a test to verify everything works
+That single command installs what’s needed, builds MPC, fetches a default local model (codellama:7b via Ollama), and runs a sanity check.
 
-### Manual Installation
+Remote instead of local?  
 ```bash
-# macOS
-brew install curl jansson ollama
-make
-
-# Ubuntu/Debian
-sudo apt-get install libcurl4-openssl-dev libjansson-dev
-curl -fsSL https://ollama.ai/install.sh | sh
-make
-
-# CentOS/RHEL
-sudo yum install libcurl-devel jansson-devel
-curl -fsSL https://ollama.ai/install.sh | sh
-make
+export GEMINI_API_KEY=your_key
+mpc --remote examples/simple.1
 ```
+
+See SETUP.md for optional manual / platform notes (kept out of this README to stay lean).
 
 ## Usage
 
