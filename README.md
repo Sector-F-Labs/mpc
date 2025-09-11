@@ -120,8 +120,6 @@ Net effect: the model doesn’t just emit C syntax—it reproduces the reasoning
 
 This creates training data that teaches LLMs not just C syntax, but C *thinking*.
 
-
-
 ## Examples
 
 Try the included examples:
@@ -133,31 +131,9 @@ mpc examples/calculator.1 # Add two numbers
 
 See `examples/` directory for more. Details in `man mpc`.
 
-
-
-
-
-
-
-
-
-
-
-
-
 ## License
 
 BSD 3-Clause License.
-
-
-
-
-
-
-
-
-
-
 
 ---
 

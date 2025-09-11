@@ -81,11 +81,11 @@ MPC generates **C code exclusively** for compelling reasons:
 
 | Aspect | C Generation | Other Languages |
 |--------|-------------|-----------------|
-| **LLM Training** | ✅ Extensive (Linux kernel, POSIX) | ⚠️ Limited |
-| **Success Rate** | ✅ 85-90% clean compilation | ❌ 40-70% |
-| **Toolchain** | ✅ Universal (Clang/GCC) | ⚠️ Language-specific |
-| **Performance** | ✅ Native speed | ⚠️ Variable |
-| **Complexity** | ✅ Simple, debuggable | ❌ Complex syntax/semantics |
+| **LLM Training** | Extensive (Linux kernel, POSIX) | Limited |
+| **Success Rate** | 85-90% clean compilation | 40-70% |
+| **Toolchain** | Universal (Clang/GCC) | Language-specific |
+| **Performance** | Native speed | Variable |
+| **Complexity** | Simple, debuggable | Complex syntax/semantics |
 
 ## File Format Specifications
 

@@ -75,18 +75,18 @@ Compile a simple man page:
 .nf
 .RS
 $ mpc examples/hello.1
-📖 Parsing man page...
-✓ Parsed man page: hello (6 sections, 3 options, 0 examples)
-📝 Generating structured specification... (attempt 1/3)
-🤖 Generating code via codellama:7b...
-✓ Generated 947 bytes of code
-🔍 Extracting code from LLM response...
-🔧 Compiling to executable... (attempt 1/3)
-🔧 Compiling C code to executable...
-✅ Compilation successful on attempt 1
+Parsing man page...
+Parsed man page: hello (6 sections, 3 options, 0 examples)
+Generating structured specification... (attempt 1/3)
+Generating code via codellama:7b...
+Generated 947 bytes of code
+Extracting code from LLM response...
+Compiling to executable... (attempt 1/3)
+Compiling C code to executable...
+Compilation successful on attempt 1
 
-✅ Success! Generated executable: examples/hello
-📊 File size: 33704 bytes
+Success! Generated executable: examples/hello
+File size: 33704 bytes
 $ ./examples/hello
 Hello, World!
 .RE
@@ -145,11 +145,11 @@ The --remote flag was used but no API key was provided.
 .B "Error: LLM request failed: Connection refused"
 Cannot connect to the Ollama server. Make sure it's running with 'ollama serve'.
 .TP
-.B "❌ Compilation failed on attempt N/M"
+.B "Compilation failed on attempt N/M"
 The generated C code failed to compile. Error details are captured and
 sent as feedback for the next retry attempt.
 .TP
-.B "💥 Max retries exceeded. Final compilation failed."
+.B "Max retries exceeded. Final compilation failed."
 All retry attempts were exhausted and compilation still failed.
 .SH NOTES
 .B mpc

@@ -7,11 +7,11 @@
 
 set -e
 
-echo "🔧 Configuring Man Page Compiler (MPC)..."
+echo "Configuring Man Page Compiler (MPC)..."
 
 # Detect system and install dependencies
 if [[ "$OSTYPE" == "darwin"* ]]; then
-    echo "📱 macOS detected"
+    echo "macOS detected"
     if ! command -v brew >/dev/null 2>&1; then
         echo "Installing Homebrew..."
         /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
@@ -19,32 +19,32 @@ if [[ "$OSTYPE" == "darwin"* ]]; then
     echo "Installing dependencies..."
     brew install curl jansson ollama
 elif [[ -f /etc/debian_version ]]; then
-    echo "🐧 Debian/Ubuntu detected"
+    echo "Debian/Ubuntu detected"
     sudo apt-get update
     sudo apt-get install -y libcurl4-openssl-dev libjansson-dev build-essential pkg-config
     curl -fsSL https://ollama.ai/install.sh | sh
 elif [[ -f /etc/redhat-release ]]; then
-    echo "🎩 RedHat/CentOS detected"
+    echo "RedHat/CentOS detected"
     sudo dnf install -y libcurl-devel jansson-devel gcc make pkg-config
     curl -fsSL https://ollama.ai/install.sh | sh
 else
-    echo "❓ Unknown system - install libcurl-dev, jansson-dev, and ollama manually"
+    echo "Unknown system - install libcurl-dev, jansson-dev, and ollama manually"
     exit 1
 fi
 
 # Build MPC
-echo "🔨 Building MPC..."
+echo "Building MPC..."
 make clean 2>/dev/null || true
 make
 
 # Setup LLM
-echo "🤖 Setting up LLM backend..."
+echo "Setting up LLM backend..."
 ollama serve >/dev/null 2>&1 &
 sleep 3
 ollama pull codellama:7b
 
 # Test
-echo "🧪 Testing..."
+echo "Testing..."
 ./bin/mpc examples/simple.1 >/dev/null 2>&1 && rm -f simple
 
-echo "✅ MPC is ready! Run: ./bin/mpc examples/simple.1"
+echo "MPC is ready! Run: ./bin/mpc examples/simple.1"
