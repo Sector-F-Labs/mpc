@@ -413,39 +413,34 @@ make examples   # Compile all example man pages to ./bin/
 - **Review Required**: Generated code should be tested (though usually works)
 - **Platform**: Primarily tested on macOS and Linux
 
-### Future Improvements
-- **Better argument parsing** templates in generated code
-- **Shell completion** generation from OPTIONS section
-- **Package integration** with Homebrew, apt repositories
-- **Interactive refinement** mode for iterative improvement
-- **Man page linting** for better LLM input quality
 
-## The Vision
 
-Imagine a world where:
-- You prototype CLI tools by writing their documentation first
-- Man pages are executable specifications
-- Documentation and implementation are always in sync
-- "Write the docs first" actually means something
 
-This is that world.
+
+
+
+
+
+
+
+
 
 ## License
 
-BSD 3-Clause License - Because documentation should be free.
+BSD 3-Clause License.
 
-## See Also
 
-- `mpc(1)` - Complete man page documentation for MPC itself
-- [Ollama](https://ollama.ai/) - Local LLM runtime
-- [Google AI Studio](https://aistudio.google.com/) - Get Gemini API keys
-- [Homebrew](https://brew.sh/) - Package manager for macOS
-- `man(1)` - Manual page format
-- `groff(1)` - Document formatting
-- [Linux Kernel Mailing List](https://lkml.org/) - Where LLMs learned to write great C code!
+
+
+
+
+
+
+
+
 
 ---
 
-**Man Page Compiler: Where documentation meets reality. 📖→⚡**
+**MPC: Documentation is the source; code is the build artifact.**
 
-*Write the docs, get the code.*
+*Write the man page. Run the result.*
