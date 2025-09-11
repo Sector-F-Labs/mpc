@@ -1,0 +1,18 @@
+# Build artifacts
+build/
+src/build/
+*.o
+
+# Main binary (built to bin/)
+bin/mpc
+
+# Generated example binaries
+bin/calculator
+bin/count
+bin/hello
+bin/simple
+
+# Legacy binaries (old location)
+mpc
+simple_test
+hello_test
