@@ -1,21 +1,29 @@
 # Man Page Compiler (MPC)
 
-Turn a Unix man page (`.1`) into a real, working CLI program. You write the documentation first; MPC makes the implementation match it.
+Turn a Unix man page (`.1`) into a real, working CLI program. You write the documentation first; MPC generates the implementation to match it.
+
+---
 
 ## What is this?
 
-MPC is a **documentation-as-source compiler**: the man page becomes the canonical specification, and the code is generated to fulfill it.
+MPC is a **documentation-as-source compiler**: the man page is treated as the canonical specification, and the generated code is built to conform to it.
+
+---
 
 ## Philosophy: Inverting the Usual Direction
 
-Traditionally: write code → (maybe) write docs → docs drift.
-With MPC: write precise docs → get matching code → docs stay the source of truth.
+Traditional workflow: write code → (maybe) write docs → docs drift out of sync.
 
-Man pages already define: interface, behavior, options, examples, exit codes. MPC treats that as an executable spec and generates C code that conforms to it.
+MPC workflow: write precise docs → generate matching code → docs remain the source of truth.
+
+Man pages already define interface, behavior, options, examples, and exit codes. MPC treats this as an *executable specification* and produces C programs that implement it.
+
+---
 
 ## Example
 
 Input file (`calculator.1`):
+
 ```roff
 .TH CALCULATOR 1
 .SH NAME
@@ -37,17 +45,21 @@ $ calculator 42 13
 55
 ```
 
-Output: A working `calculator` binary that actually behaves exactly as documented.
+Output: a working `calculator` binary that behaves exactly as documented.
+
+---
 
 ## Quick Start
 
 ```bash
-./configure                    # Auto setup everything
+./configure                    # Auto-setup everything
 ./bin/mpc examples/simple.1    # Generate program
 ./simple                       # Run it
 ```
 
-That's it! The `./configure` script automatically installs dependencies, sets up Ollama, builds MPC, and tests everything.
+The `./configure` script automatically installs dependencies, sets up Ollama, builds MPC, and runs a quick test.
+
+---
 
 ## Setup
 
@@ -55,15 +67,23 @@ That's it! The `./configure` script automatically installs dependencies, sets up
 ./configure
 ```
 
-That single command installs what’s needed, builds MPC, fetches a default local model (codellama:7b via Ollama), and runs a sanity check.
+That single command:
+
+* Installs prerequisites
+* Builds MPC
+* Fetches a default local model (`codellama:7b` via Ollama)
+* Runs a sanity check
 
 Remote instead of local?
+
 ```bash
 export GEMINI_API_KEY=your_key
 mpc --remote examples/simple.1
 ```
 
-See SETUP.md for optional manual / platform notes (kept out of this README to stay lean).
+See `SETUP.md` for optional platform-specific notes.
+
+---
 
 ## Usage
 
@@ -72,7 +92,9 @@ mpc examples/simple.1    # Generate from man page
 ./simple --help          # Run the result
 ```
 
-Run `mpc --help` for options.
+Run `mpc --help` for available options.
+
+---
 
 ## How It Works
 
@@ -80,56 +102,57 @@ Run `mpc --help` for options.
 Man Page → Parse → LLM → Generated Code → Executable
 ```
 
-When compilation fails, MPC feeds error messages back to the LLM for automatic fixes.
+When compilation fails, MPC captures compiler errors and feeds them back into the LLM, retrying until it succeeds or hits the retry limit.
+
+---
 
 ## Mailing List Hypothesis
 
-LLMs are unusually strong at generating C because decades of public systems programming mailing lists (kernel, BSDs, GNU, POSIX) combine code, rationale, review, corrections, portability notes, and security discussion in one stream. That mixed signal (not just code blobs, but argued code) trains models in patterns + intent. MPC leverages this: a well-structured man page mirrors the specification style in those archives, so the model reliably maps the documented interface to working, idiomatic C.
+I’ve observed that LLMs are unusually strong at generating C compared to many other languages. My hypothesis is that this strength comes not only from C’s long history, but also from its unique documentation and development culture.
 
-### Why it matters here
+For decades, the largest C ecosystems—Linux, FreeBSD, OpenBSD, NetBSD, the GNU project, and POSIX—have relied heavily on **public mailing lists** for development. These archives contain not just code, but rationale, patch reviews, corrections, portability notes, and security discussions. Man pages, in turn, encode the interface contracts of these systems in a terse, regularized form.
 
-Instead of listing ecosystems and repeating evidence, the key takeaway is: documentation written in the terse, declarative, interface-first style (like man pages) aligns with the discourse form the model learned from—so generation quality is higher and MPC can stay minimal.
+Together, they form a feedback loop:
 
-**The Big C Ecosystems:**
-- **Linux Kernel** - LKML (Linux Kernel Mailing List) with millions of messages
-- **FreeBSD** - Technical mailing lists with detailed code discussions
-- **OpenBSD** - Security-focused development discussions
-- **NetBSD** - Portability and architecture discussions
-- **GNU Project** - Coreutils, GCC, and system tool development
-- **POSIX Standards** - IEEE specifications with extensive examples
+**Specification (man pages) → Discussion (mailing lists) → Implementation (patches) → Correction/Review → Updated specification**
 
-**Why Mailing Lists are LLM Gold:**
-- **Code + Context**: Every patch comes with detailed explanations
-- **Error Corrections**: Mistakes are publicly discussed and fixed
-- **Best Practices**: Senior developers explain *why* code should be written certain ways
-- **Real Problems**: Actual bugs, edge cases, and production issues
-- **Iterative Refinement**: Multiple revisions with explanations for each change
+This cycle produces training data that is:
 
-Net effect: the model doesn’t just emit C syntax—it reproduces the reasoning patterns behind small, composable Unix-style tools. That is exactly what MPC turns into an executable.
+* **Rich in context** (not just the “what” but the “why”)
+* **Self-correcting** (errors are publicly fixed and explained)
+* **Grounded in constraints** (performance, security, portability, backwards compatibility)
+* **Iterative** (patches evolve through multiple revisions with explicit reasoning)
 
+### Why this matters for LLMs
 
+Unlike isolated code snippets, mailing list discussions and man pages encode *reasoning patterns*. They capture not only solutions but the thought processes behind them. That kind of explanatory signal is exactly what makes LLMs better at “thinking in C” rather than just emitting syntax.
 
-**The Hypothesis:** Languages with rich mailing list cultures produce better LLM training data because they include the *reasoning* behind code decisions, not just the code itself. The verbose, explanatory nature of email discussions creates ideal training material for understanding programming intent and best practices.
+### Supporting ecosystems
 
-**Why C Projects Excel at This:**
-- **Backwards compatibility** requirements force detailed explanations
-- **Performance implications** require justification for every decision
-- **Security considerations** are explicitly discussed
-- **Portability concerns** are thoroughly analyzed
-- **Maintenance burden** is a constant topic of discussion
+* **Linux Kernel (LKML):** Millions of messages discussing design trade-offs
+* **FreeBSD:** Long-running technical lists with detailed rationale
+* **OpenBSD:** Security-first reviews and audits
+* **NetBSD:** Architecture and portability debates
+* **GNU Project:** Coreutils, GCC, and tooling development
+* **POSIX Standards:** Formal specifications with illustrative examples
 
-This creates training data that teaches LLMs not just C syntax, but C *thinking*.
+**The Hypothesis:** Languages with strong text-based development cultures (especially mailing lists + man pages) provide LLMs with superior training data because they encode both code *and* intent. For C, this creates a uniquely fertile ground for models to learn not just syntax, but systems-level reasoning.
+
+MPC leverages this: a well-written man page acts like the distilled version of those archives, giving the model exactly what it needs to map specification → correct, idiomatic C.
+
+---
 
 ## Examples
 
-Try the included examples:
 ```bash
 mpc examples/hello.1      # Simple greeting program
 mpc examples/count.1      # Line counter
 mpc examples/calculator.1 # Add two numbers
 ```
 
-See `examples/` directory for more. Details in `man mpc`.
+See the `examples/` directory for more. Details in `man mpc`.
+
+---
 
 ## License
 
