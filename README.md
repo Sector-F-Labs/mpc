@@ -513,7 +513,7 @@ This is that world.
 
 ## License
 
-MIT License - Because documentation should be free.
+BSD 3-Clause License - Because documentation should be free.
 
 ## See Also
 
