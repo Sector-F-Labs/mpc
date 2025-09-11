@@ -57,6 +57,7 @@ typedef struct {
     int use_remote;
     int verbose;
     int debug;
+    int max_retries;
 } config_t;
 
 // HTTP response callback for curl
@@ -207,7 +208,7 @@ int parse_manpage(const char *filename, manpage_t *manpage) {
 }
 
 // Generate structured English specification for LLM
-char* generate_specification(const manpage_t *manpage, const config_t *config) {
+char* generate_specification(const manpage_t *manpage, const config_t *config, const char *error_feedback) {
     char *spec = malloc(MAX_PROMPT_SIZE);
     if (!spec) return NULL;
     
@@ -270,6 +271,17 @@ char* generate_specification(const manpage_t *manpage, const config_t *config) {
     strcat(spec, "NOTE: C code generation works exceptionally well because LLMs have been\n");
     strcat(spec, "extensively trained on Linux kernel code and mailing list discussions,\n");
     strcat(spec, "making them excellent at generating clean, portable C code.\n\n");
+    
+    // Add error feedback if this is a retry
+    if (error_feedback && strlen(error_feedback) > 0) {
+        strcat(spec, "PREVIOUS ATTEMPT FAILED WITH ERRORS:\n");
+        strcat(spec, error_feedback);
+        strcat(spec, "\n\nPlease fix these compilation errors in your response:\n");
+        strcat(spec, "- Add missing #include statements\n");
+        strcat(spec, "- Fix undefined variables and functions\n");
+        strcat(spec, "- Ensure proper variable declarations\n");
+        strcat(spec, "- Use correct C syntax and types\n\n");
+    }
     
     return spec;
 }
@@ -436,7 +448,7 @@ char* extract_code(const char *response) {
 }
 
 // Compile generated C code to executable
-int compile_code(const char *code, const config_t *config) {
+int compile_code(const char *code, const config_t *config, char **error_output) {
     char temp_file[256];
     char cmd[512];
     FILE *fp;
@@ -464,13 +476,48 @@ int compile_code(const char *code, const config_t *config) {
         compiler = "gcc";
     }
     
-    snprintf(cmd, sizeof(cmd), "%s -O2 -Wall -Wextra -std=c99 %s -o %s", 
+    // Capture compilation output for error feedback
+    char error_cmd[768];
+    snprintf(error_cmd, sizeof(error_cmd), "%s -O2 -Wall -Wextra -std=c99 %s -o %s 2>&1", 
              compiler, temp_file, config->output_file);
     
-    if (system(cmd) != 0) {
-        printf("Error: %s compilation failed\n", compiler);
-        printf("Check build/%s.c for generated code\n", base);
-        return -1;
+    FILE *compile_output = popen(error_cmd, "r");
+    if (compile_output) {
+        char *output = malloc(4096);
+        size_t output_size = 0;
+        char buffer[256];
+        
+        while (fgets(buffer, sizeof(buffer), compile_output)) {
+            size_t len = strlen(buffer);
+            output = realloc(output, output_size + len + 1);
+            strcpy(output + output_size, buffer);
+            output_size += len;
+        }
+        
+        int exit_code = pclose(compile_output);
+        
+        if (exit_code != 0) {
+            printf("Error: %s compilation failed\n", compiler);
+            printf("Check build/%s.c for generated code\n", base);
+            if (error_output && output_size > 0) {
+                *error_output = output;
+            } else {
+                free(output);
+            }
+            return -1;
+        }
+        
+        free(output);
+    } else {
+        // Fallback to original method if popen fails
+        snprintf(cmd, sizeof(cmd), "%s -O2 -Wall -Wextra -std=c99 %s -o %s", 
+                 compiler, temp_file, config->output_file);
+        
+        if (system(cmd) != 0) {
+            printf("Error: %s compilation failed\n", compiler);
+            printf("Check build/%s.c for generated code\n", base);
+            return -1;
+        }
     }
     
     // Make executable
@@ -484,10 +531,10 @@ void print_usage(const char *program_name) {
     printf("Man Page Compiler - Translate man pages to working CLI utilities via LLMs\n\n");
     printf("Options:\n");
     printf("  -o OUTPUT     Output file (default: program name)\n");
-
     printf("  -m MODEL      LLM model (default: codellama:7b)\n");
     printf("  -u URL        Ollama URL (default: http://localhost:11434)\n");
     printf("  --remote      Use remote Gemini API (requires GEMINI_API_KEY)\n");
+    printf("  -r RETRIES    Max retry attempts (default: 3)\n");
     printf("  -v            Verbose output\n");
     printf("  -d            Debug mode (keep intermediate files)\n");
     printf("  -h            Show this help\n\n");
@@ -509,7 +556,8 @@ int main(int argc, char *argv[]) {
         .api_key = NULL,
         .use_remote = 0,
         .verbose = 0,
-        .debug = 0
+        .debug = 0,
+        .max_retries = 3
     };
     
     // Handle --remote flag separately since getopt doesn't handle long options
@@ -527,11 +575,12 @@ int main(int argc, char *argv[]) {
     }
     
     int opt;
-    while ((opt = getopt(argc, argv, "o:m:u:vdh")) != -1) {
+    while ((opt = getopt(argc, argv, "o:m:u:r:vdh")) != -1) {
         switch (opt) {
             case 'o': config.output_file = optarg; break;
             case 'm': config.llm_model = optarg; break;
             case 'u': config.llm_url = optarg; break;
+            case 'r': config.max_retries = atoi(optarg); break;
             case 'v': config.verbose = 1; break;
             case 'd': config.debug = 1; break;
             case 'h': print_usage(argv[0]); return 0;
@@ -571,7 +620,8 @@ int main(int argc, char *argv[]) {
     printf("Input: %s\n", config.input_file);
     printf("Output: %s\n", config.output_file);
     printf("Target: %s\n", config.target_language);
-    printf("Model: %s%s\n\n", config.llm_model, config.use_remote ? " (remote)" : " (local)");
+    printf("Model: %s%s\n", config.llm_model, config.use_remote ? " (remote)" : " (local)");
+    printf("Max retries: %d\n\n", config.max_retries);
     
     // Step 1: Parse man page
     printf("📖 Parsing man page...\n");
@@ -580,42 +630,81 @@ int main(int argc, char *argv[]) {
         return 1;
     }
     
-    // Step 2: Generate specification
-    printf("📝 Generating structured specification...\n");
-    char *spec = generate_specification(&manpage, &config);
-    if (!spec) {
-        printf("Error: Failed to generate specification\n");
-        return 1;
-    }
+    // Step 2-4: Generate and compile code with retry logic
+    char *error_feedback = NULL;
+    char *final_code = NULL;
     
-    if (config.verbose) {
-        printf("Generated specification (%zu chars):\n", strlen(spec));
-        printf("---\n%s\n---\n", spec);
-    }
-    
-    // Step 3: Generate code via LLM
-    char *generated_code = call_llm(spec, &config);
-    if (!generated_code) {
-        printf("Error: Failed to generate code\n");
-        free(spec);
-        return 1;
-    }
-    
-    // Step 4: Extract and compile code
-    printf("🔍 Extracting code from LLM response...\n");
-    char *code = extract_code(generated_code);
-    
-    if (config.debug) {
-        printf("Extracted code:\n---\n%s\n---\n", code);
-    }
-    
-    printf("🔧 Compiling to executable...\n");
-    if (compile_code(code, &config) != 0) {
-        printf("Error: Compilation failed\n");
-        free(spec);
-        free(generated_code);
-        free(code);
-        return 1;
+    for (int attempt = 1; attempt <= config.max_retries; attempt++) {
+        printf("📝 Generating structured specification... (attempt %d/%d)\n", attempt, config.max_retries);
+        
+        char *spec = generate_specification(&manpage, &config, error_feedback);
+        if (!spec) {
+            printf("Error: Failed to generate specification\n");
+            free(error_feedback);
+            return 1;
+        }
+        
+        if (config.verbose) {
+            printf("Generated specification (%zu chars):\n", strlen(spec));
+            printf("---\n%s\n---\n", spec);
+        }
+        
+        printf("🤖 Generating code via LLM... (attempt %d/%d)\n", attempt, config.max_retries);
+        char *generated_code = call_llm(spec, &config);
+        if (!generated_code) {
+            printf("Error: Failed to generate code on attempt %d\n", attempt);
+            free(spec);
+            if (attempt == config.max_retries) {
+                free(error_feedback);
+                return 1;
+            }
+            continue;
+        }
+        
+        printf("🔍 Extracting code from LLM response...\n");
+        char *code = extract_code(generated_code);
+        
+        if (config.debug) {
+            printf("Extracted code (attempt %d):\n---\n%s\n---\n", attempt, code);
+        }
+        
+        printf("🔧 Compiling to executable... (attempt %d/%d)\n", attempt, config.max_retries);
+        char *compile_error = NULL;
+        if (compile_code(code, &config, &compile_error) == 0) {
+            // Success!
+            printf("✅ Compilation successful on attempt %d\n", attempt);
+            final_code = code;
+            free(spec);
+            free(generated_code);
+            free(error_feedback);
+            free(compile_error);
+            break;
+        } else {
+            // Compilation failed
+            printf("❌ Compilation failed on attempt %d/%d\n", attempt, config.max_retries);
+            
+            if (attempt < config.max_retries && compile_error) {
+                printf("🔄 Retrying with error feedback...\n");
+                free(error_feedback);
+                error_feedback = compile_error;
+                
+                if (config.verbose) {
+                    printf("Compilation errors to send to LLM:\n---\n%s\n---\n", error_feedback);
+                }
+            } else {
+                printf("💥 Max retries exceeded. Final compilation failed.\n");
+                free(spec);
+                free(generated_code);
+                free(code);
+                free(error_feedback);
+                free(compile_error);
+                return 1;
+            }
+            
+            free(spec);
+            free(generated_code);
+            free(code);
+        }
     }
     
     printf("\n✅ Success! Generated executable: %s\n", config.output_file);
@@ -627,9 +716,7 @@ int main(int argc, char *argv[]) {
     }
     
     // Cleanup
-    free(spec);
-    free(generated_code);
-    free(code);
+    free(final_code);
     
     return 0;
 }
