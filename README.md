@@ -1,14 +1,17 @@
 # Man Page Compiler (MPC)
 
-A revolutionary compiler that translates Unix man page documentation (`.1` files) into actual working command-line utilities using Large Language Models.
+Turn a Unix man page (`.1`) into a real, working CLI program. You write the documentation first; MPC makes the implementation match it.
 
 ## What is this?
 
-This is the world's first **documentation-driven compiler**. Write a man page describing your ideal command-line tool, and MPC will generate the actual working binary that implements exactly what the documentation describes.
+MPC is a **documentation-as-source compiler**: the man page becomes the canonical specification, and the code is generated to fulfill it.
 
-## The Philosophy
+## Philosophy: Inverting the Usual Direction
 
-Why write code when you can just write documentation? Man pages already perfectly describe what a CLI tool should do - its interface, behavior, options, and examples. This compiler reads your man page and makes it real.
+Traditionally: write code → (maybe) write docs → docs drift.
+With MPC: write precise docs → get matching code → docs stay the source of truth.
+
+Man pages already define: interface, behavior, options, examples, exit codes. MPC treats that as an executable spec and generates C code that conforms to it.
 
 ## Example
 
@@ -184,13 +187,13 @@ This dramatically improves success rates from ~75% to ~90%+ for complex man page
 - **EXIT STATUS** - Exit code meanings
 - **FILES** - Configuration files used
 
-## Why C? The Mailing List Hypothesis
+## Mailing List Hypothesis
 
-MPC generates **C code exclusively**, and I've observed that LLMs are exceptionally good at generating clean, compilable C code. Here's my best hypothesis for why this works so remarkably well:
+LLMs are unusually strong at generating C because decades of public systems programming mailing lists (kernel, BSDs, GNU, POSIX) combine code, rationale, review, corrections, portability notes, and security discussion in one stream. That mixed signal (not just code blobs, but argued code) trains models in patterns + intent. MPC leverages this: a well-structured man page mirrors the specification style in those archives, so the model reliably maps the documented interface to working, idiomatic C.
 
-### **The Mailing List Training Phenomenon**
+### Why it matters here
 
-I believe LLMs have been extensively trained on a unique form of technical communication that's particularly well-suited to code generation - **mailing list archives** from major C projects:
+Instead of listing ecosystems and repeating evidence, the key takeaway is: documentation written in the terse, declarative, interface-first style (like man pages) aligns with the discourse form the model learned from—so generation quality is higher and MPC can stay minimal.
 
 **The Big C Ecosystems:**
 - **Linux Kernel** - LKML (Linux Kernel Mailing List) with millions of messages
@@ -207,18 +210,9 @@ I believe LLMs have been extensively trained on a unique form of technical commu
 - **Real Problems**: Actual bugs, edge cases, and production issues
 - **Iterative Refinement**: Multiple revisions with explanations for each change
 
-This creates a unique dataset where LLMs learn not just *what* C code looks like, but *how to think about* C programming problems.
+Net effect: the model doesn’t just emit C syntax—it reproduces the reasoning patterns behind small, composable Unix-style tools. That is exactly what MPC turns into an executable.
 
-### **Observable Results Supporting This Hypothesis**
 
-From my testing with MPC, the evidence is compelling:
-
-- ✅ **High success rate** - 85-90% of generated C code compiles cleanly on first attempt
-- ✅ **Idiomatic patterns** - Automatically uses proper `getopt()`, error handling, POSIX conventions
-- ✅ **Memory management** - Proper malloc/free, bounds checking without explicit instruction
-- ✅ **Cross-platform awareness** - Generated code works on macOS, Linux, BSDs out of the box
-- ✅ **Error handling** - Includes appropriate `errno` usage, meaningful error messages
-- ✅ **Standards compliance** - Follows POSIX conventions, proper exit codes
 
 **The Hypothesis:** Languages with rich mailing list cultures produce better LLM training data because they include the *reasoning* behind code decisions, not just the code itself. The verbose, explanatory nature of email discussions creates ideal training material for understanding programming intent and best practices.
 
