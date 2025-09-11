@@ -57,7 +57,7 @@ That's it! The `./configure` script automatically installs dependencies, sets up
 
 That single command installs what’s needed, builds MPC, fetches a default local model (codellama:7b via Ollama), and runs a sanity check.
 
-Remote instead of local?  
+Remote instead of local?
 ```bash
 export GEMINI_API_KEY=your_key
 mpc --remote examples/simple.1
@@ -134,9 +134,3 @@ See `examples/` directory for more. Details in `man mpc`.
 ## License
 
 BSD 3-Clause License.
-
----
-
-**MPC: Documentation is the source; code is the build artifact.**
-
-*Write the man page. Run the result.*
