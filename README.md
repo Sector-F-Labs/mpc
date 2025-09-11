@@ -38,35 +38,13 @@ Output: A working `calculator` binary that actually behaves exactly as documente
 
 ## Quick Start
 
-1. **Install dependencies:**
-   ```bash
-   make deps
-   ```
+```bash
+./configure                    # Auto setup everything
+./bin/mpc examples/simple.1    # Generate program
+./simple                       # Run it
+```
 
-2. **Build the compiler:**
-   ```bash
-   make
-   ```
-
-3. **Set up an LLM** (choose one):
-   ```bash
-   # Option A: Local Ollama
-   ollama pull codellama:7b
-   ollama serve
-
-   # Option B: Remote Gemini API
-   export GEMINI_API_KEY=your_api_key_here
-   ```
-
-4. **Compile a man page:**
-   ```bash
-   mpc examples/simple.1
-   ./simple
-   ```
-
-**Note:** The examples above assume `mpc` is in your PATH (either installed with `make install` or using direnv). During development, use `./bin/mpc` instead.
-
-That's it! You now have a working executable generated from documentation.
+That's it! The `./configure` script automatically installs dependencies, sets up Ollama, builds MPC, and tests everything.
 
 ## Requirements
 
@@ -83,27 +61,31 @@ That's it! You now have a working executable generated from documentation.
 
 ### Dependencies
 
-### macOS (Primary Platform)
+### Automatic Setup (Recommended)
 ```bash
-# Install dependencies via Homebrew
-brew install curl jansson
-
-# Or use our automated installer
-make deps
-
-# Build
-make
+./configure
 ```
 
-### Linux/Unix
+The configure script automatically detects your system and:
+- Installs dependencies (libcurl, jansson, ollama)
+- Builds MPC
+- Sets up LLM backend with codellama:7b
+- Runs a test to verify everything works
+
+### Manual Installation
 ```bash
+# macOS
+brew install curl jansson ollama
+make
+
 # Ubuntu/Debian
 sudo apt-get install libcurl4-openssl-dev libjansson-dev
+curl -fsSL https://ollama.ai/install.sh | sh
+make
 
 # CentOS/RHEL
 sudo yum install libcurl-devel jansson-devel
-
-# Build
+curl -fsSL https://ollama.ai/install.sh | sh
 make
 ```
 
@@ -238,16 +220,6 @@ From my testing with MPC, the evidence is compelling:
 - ✅ **Error handling** - Includes appropriate `errno` usage, meaningful error messages
 - ✅ **Standards compliance** - Follows POSIX conventions, proper exit codes
 
-### **The Mailing List Advantage vs Other Languages**
-
-| Language | Mailing List Culture | LLM Performance | Notes |
-|----------|---------------------|-----------------|-------|
-| **C** | ✅ Decades of public archives | ~90% success | Rich explanatory discussions |
-| **Rust** | ⚠️ GitHub-centric development | ~60% success | Less explanatory context |
-| **Go** | ⚠️ Modern, smaller corpus | ~70% success | Good but limited training data |
-| **Python** | ⚠️ Stack Overflow + docs | ~75% success | Different communication style |
-| **JavaScript** | ❌ Fragmented communities | ~50% success | Lacks deep technical discussions |
-
 **The Hypothesis:** Languages with rich mailing list cultures produce better LLM training data because they include the *reasoning* behind code decisions, not just the code itself. The verbose, explanatory nature of email discussions creates ideal training material for understanding programming intent and best practices.
 
 **Why C Projects Excel at This:**
@@ -366,26 +338,7 @@ MPC is implemented in **clean, portable C** (~500 lines):
 - **Cross-platform** - Works on macOS, Linux, Windows (WSL)
 - **Self-contained** - No runtime dependencies
 
-### Why C Instead of Rust?
 
-After experimenting with complex Rust FFI bindings and parser generators, we realized the **fundamental advantage of C for LLM generation**:
-
-✅ **C Advantages:**
-- **LLM expertise** - Trained extensively on kernel code
-- **Fast compilation** (seconds vs minutes)
-- **Simple, readable** code
-- **Universal compatibility**
-- **Easy debugging**
-- **Minimal dependencies**
-
-❌ **Rust Complexity:**
-- **Limited LLM training** on Rust codebases
-- **Long compile times** for development
-- **Complex FFI** for system integration
-- **Borrow checker errors** in generated code
-- **Learning curve** for contributors
-
-The **old ways are often the best ways** - especially when your code generator was trained on them!
 
 ## Testing
 
@@ -436,67 +389,11 @@ mpc --remote -m gemini-1.5-pro examples/simple.1
 
 ## Troubleshooting
 
-### Common Issues
-
-**"Error: libcurl not found"**
-```bash
-# macOS
-brew install curl
-
-# Ubuntu
-sudo apt-get install libcurl4-openssl-dev
-```
-
-**"Error: jansson not found"**
-```bash
-# macOS
-brew install jansson
-
-# Ubuntu
-sudo apt-get install libjansson-dev
-```
-
-**"Connection refused (Ollama)"**
-```bash
-# Start Ollama server
-ollama serve
-
-# Or use remote API
-mpc --remote examples/simple.1
-```
-
-**"GEMINI_API_KEY not set"**
-```bash
-export GEMINI_API_KEY=your_key_here
-mpc --remote examples/simple.1
-```
-
-### Quality Issues
-
-If generated code doesn't work well:
-
-1. **Increase retry attempts:**
-   ```bash
-   mpc -r 5 -v examples/simple.1    # More retries with verbose output
-   ```
-
-2. **Try a different model:**
-   ```bash
-   mpc -m deepseek-coder examples/simple.1
-   ```
-
-3. **Use remote API:**
-   ```bash
-   mpc --remote examples/simple.1
-   ```
-
-4. **Improve your man page:**
-   - Add more detailed examples with expected output
-   - Clarify option descriptions and argument types
-   - Include error conditions and exit codes
-   - Follow standard man page conventions (helps LLM understanding)
-
-**Note:** The retry system with error feedback usually resolves most compilation issues automatically. If you're still having problems after 3+ retries, the man page specification might need clarification.
+Having issues? See [TROUBLESHOOTING.md](TROUBLESHOOTING.md) for solutions to common problems including:
+- Installation and dependency issues
+- Ollama connection problems
+- Code generation failures
+- Debug mode usage
 
 ## Development
 
