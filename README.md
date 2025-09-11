@@ -67,98 +67,20 @@ See SETUP.md for optional manual / platform notes (kept out of this README to st
 
 ## Usage
 
-### Basic Usage
-
 ```bash
-mpc [OPTIONS] INPUT.1
+mpc examples/simple.1    # Generate from man page
+./simple --help          # Run the result
 ```
 
-**Options:**
-- `-o OUTPUT` - Output file (default: program name)
-- `-m MODEL` - LLM model (default: codellama:7b)
-- `-u URL` - Ollama URL (default: http://localhost:11434)
-- `--remote` - Use remote Gemini API (requires GEMINI_API_KEY)
-- `-r RETRIES` - Max retry attempts with error feedback (default: 3)
-- `-v` - Verbose output
-- `-d` - Debug mode (keep intermediate files)
-- `-h` - Show help
-
-### Examples
-
-**Local Ollama:**
-```bash
-mpc examples/simple.1                    # Basic compilation
-mpc -o mytool examples/calculator.1      # Custom output name
-mpc -m codellama:13b examples/hello.1    # Different model
-mpc -v -d examples/count.1               # Debug mode
-mpc -r 5 examples/count.1                # Retry up to 5 times with error feedback
-```
-
-**Remote Gemini API:**
-```bash
-export GEMINI_API_KEY=your_key_here
-mpc --remote examples/simple.1                      # Use Gemini Flash
-mpc --remote -m gemini-1.5-pro examples/hello.1     # Use Gemini Pro
-mpc --remote -r 2 examples/count.1                  # Retry with Gemini API
-```
+Run `mpc --help` for options.
 
 ## How It Works
-
-The pipeline is elegantly simple:
 
 ```
 Man Page → Parse → LLM → Generated Code → Executable
 ```
 
-1. **Parse**: Extract structure from `.1` man page file
-2. **Generate**: Call LLM API (Ollama or Gemini) to generate code
-3. **Extract**: Parse code from LLM response
-4. **Compile**: Build executable using system compiler
-
-## Intelligent Retry System
-
-MPC includes a sophisticated retry mechanism that learns from compilation failures:
-
-### **Automatic Error Feedback**
-When compilation fails, MPC:
-1. **Captures compiler errors** - Full error messages with line numbers
-2. **Sends feedback to LLM** - Includes errors in the next generation prompt
-3. **Guides improvements** - Adds specific instructions to fix common issues
-4. **Retries intelligently** - Up to 3 attempts by default (configurable with `-r`)
-
-### **What Gets Fixed**
-- **Missing includes** - `#include <stdio.h>`, `#include <string.h>`, etc.
-- **Undefined variables** - Proper variable declarations and scoping
-- **Function prototypes** - Missing function declarations
-- **Type mismatches** - Correct C types and casting
-- **Syntax errors** - Proper C syntax and conventions
-
-### **Example Retry Flow**
-```bash
-mpc -v -r 3 examples/count.1
-
-# Attempt 1: LLM generates code with missing includes
-# ❌ Compilation fails: "undeclared function 'strcpy'"
-# 🔄 Retry with error feedback...
-
-# Attempt 2: LLM adds #include <string.h> based on error
-# ✅ Compilation succeeds!
-```
-
-This dramatically improves success rates from ~75% to ~90%+ for complex man pages.
-
-## Supported Man Page Sections
-
-### Required Sections
-- **NAME** - Command name and brief description
-- **SYNOPSIS** - Usage syntax and arguments
-- **DESCRIPTION** - Detailed behavior
-
-### Optional Sections
-- **OPTIONS** - Command-line flags and arguments
-- **EXAMPLES** - Usage examples with expected output
-- **EXIT STATUS** - Exit code meanings
-- **FILES** - Configuration files used
+When compilation fails, MPC feeds error messages back to the LLM for automatic fixes.
 
 ## Mailing List Hypothesis
 
@@ -198,25 +120,7 @@ Net effect: the model doesn’t just emit C syntax—it reproduces the reasoning
 
 This creates training data that teaches LLMs not just C syntax, but C *thinking*.
 
-### **The Proof: It Actually Works on a MacBook Air**
 
-The most remarkable validation of this hypothesis? **MPC actually works reliably on consumer hardware.** Using just Ollama running locally on a MacBook Air, you can:
-
-- Generate working CLI utilities in seconds
-- Achieve 85-90% compilation success rates
-- Produce binaries that handle edge cases correctly
-- Get proper error handling and memory management
-- Create cross-platform compatible code
-
-This isn't just a theoretical exercise - it's a **practical reality**. While generating reliable Rust, Go, or Python code with local LLMs remains hit-or-miss, C code generation is remarkably consistent and robust.
-
-**The Consumer Hardware Revolution:**
-- **No cloud required** - Everything runs locally with Ollama
-- **No API costs** - CodeLlama 7B model runs on 16GB MacBook Air M3
-- **Fast iteration** - Generate, compile, test in under 30 seconds
-- **Reliable results** - Most man pages compile successfully on first attempt
-
-This demonstrates that the mailing list hypothesis isn't just academically interesting - it has **measurable, practical impact** on code generation quality that you can experience firsthand.
 
 ## Example Programs
 
