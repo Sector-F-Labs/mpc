@@ -1,6 +1,6 @@
 # Makefile for Man Page Compiler (macOS/C Implementation)
 
-CC = gcc
+CC = cc
 CFLAGS = -Wall -Wextra -std=c99 -O2 `pkg-config --cflags libcurl jansson`
 LIBS = `pkg-config --libs libcurl jansson`
 
@@ -72,7 +72,7 @@ debug: clean $(TARGET)
 	@mkdir -p build
 
 # Clean build artifacts
-clean:
+clean: clean-examples
 	rm -f $(OBJECTS) $(TARGET)
 	rm -rf build/ src/build/
 

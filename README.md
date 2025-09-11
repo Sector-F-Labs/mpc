@@ -50,10 +50,10 @@ Output: A working `calculator` binary that actually behaves exactly as documente
 
 3. **Set up an LLM** (choose one):
    ```bash
-   # Option A: Local Ollama (recommended for macOS)
+   # Option A: Local Ollama
    ollama pull codellama:7b
    ollama serve
-   
+
    # Option B: Remote Gemini API
    export GEMINI_API_KEY=your_api_key_here
    ```
@@ -71,8 +71,8 @@ That's it! You now have a working executable generated from documentation.
 ## Requirements
 
 ### Required Dependencies
-- **Clang or GCC** - C compiler (Clang recommended on macOS)
-- **libcurl** - HTTP client library  
+- **Clang or GCC** - C compiler
+- **libcurl** - HTTP client library
 - **jansson** - JSON parsing library
 
 ### LLM Backend (choose one)
@@ -130,7 +130,7 @@ mpc [OPTIONS] INPUT.1
 **Local Ollama:**
 ```bash
 mpc examples/simple.1                    # Basic compilation
-mpc -o mytool examples/calculator.1      # Custom output name  
+mpc -o mytool examples/calculator.1      # Custom output name
 mpc -m codellama:13b examples/hello.1    # Different model
 mpc -v -d examples/count.1               # Debug mode
 mpc -r 5 examples/count.1                # Retry up to 5 times with error feedback
@@ -154,7 +154,7 @@ Man Page → Parse → LLM → Generated Code → Executable
 
 1. **Parse**: Extract structure from `.1` man page file
 2. **Generate**: Call LLM API (Ollama or Gemini) to generate code
-3. **Extract**: Parse code from LLM response  
+3. **Extract**: Parse code from LLM response
 4. **Compile**: Build executable using system compiler
 
 ## Intelligent Retry System
@@ -193,10 +193,10 @@ This dramatically improves success rates from ~75% to ~90%+ for complex man page
 
 ### Required Sections
 - **NAME** - Command name and brief description
-- **SYNOPSIS** - Usage syntax and arguments  
+- **SYNOPSIS** - Usage syntax and arguments
 - **DESCRIPTION** - Detailed behavior
 
-### Optional Sections  
+### Optional Sections
 - **OPTIONS** - Command-line flags and arguments
 - **EXAMPLES** - Usage examples with expected output
 - **EXIT STATUS** - Exit code meanings
@@ -241,7 +241,7 @@ The `examples/` directory contains several working examples:
 ### Simple Greeting (`hello.1`)
 ```bash
 mpc examples/hello.1
-./hello                    # "Hello, World!"  
+./hello                    # "Hello, World!"
 ./hello Alice              # "Hello, Alice!"
 ./hello -h                 # Show help
 ```
@@ -265,7 +265,7 @@ mpc examples/calculator.1
 ### Ollama (Local)
 **Pros:**
 - **Complete privacy (runs locally)
-- No API costs  
+- No API costs
 - Works offline
 - Fast response times
 - **Excellent on macOS** with Apple Silicon
@@ -307,7 +307,7 @@ mpc --remote examples/simple.1
 ```
 
 **Available models:**
-- `gemini-1.5-flash` - Fast, good quality (default)  
+- `gemini-1.5-flash` - Fast, good quality (default)
 - `gemini-1.5-pro` - Higher quality, slower, excellent C code
 
 ## Implementation Details
@@ -327,9 +327,9 @@ After experimenting with complex Rust FFI bindings and parser generators, we rea
 
 ✅ **C Advantages:**
 - **LLM expertise** - Trained extensively on kernel code
-- **Fast compilation** (seconds vs minutes)  
+- **Fast compilation** (seconds vs minutes)
 - **Simple, readable** code
-- **Universal compatibility** 
+- **Universal compatibility**
 - **Easy debugging**
 - **Minimal dependencies**
 
@@ -375,7 +375,7 @@ See exactly what's happening:
 mpc -d examples/simple.1
 ```
 - Shows generated specification
-- Displays raw LLM response  
+- Displays raw LLM response
 - Saves generated source code
 - Shows compilation commands
 
@@ -398,7 +398,7 @@ mpc --remote -m gemini-1.5-pro examples/simple.1
 # macOS
 brew install curl
 
-# Ubuntu  
+# Ubuntu
 sudo apt-get install libcurl4-openssl-dev
 ```
 
@@ -489,7 +489,7 @@ llanguage/
 
 ### Current Limitations
 - **LLM Quality**: Output depends on model capabilities (but C generation is excellent!)
-- **Complexity**: Works best for standard CLI patterns and POSIX tools  
+- **Complexity**: Works best for standard CLI patterns and POSIX tools
 - **Review Required**: Generated code should be tested (though usually works)
 - **Platform**: Primarily tested on macOS and Linux
 
@@ -516,8 +516,8 @@ MIT License - Because documentation should be free.
 
 ## See Also
 
-- [Ollama](https://ollama.ai/) - Local LLM runtime (excellent on macOS)
-- [Google AI Studio](https://aistudio.google.com/) - Get Gemini API keys  
+- [Ollama](https://ollama.ai/) - Local LLM runtime
+- [Google AI Studio](https://aistudio.google.com/) - Get Gemini API keys
 - [Homebrew](https://brew.sh/) - Package manager for macOS
 - `man(1)` - Manual page format
 - `groff(1)` - Document formatting
