@@ -469,6 +469,7 @@ llanguage/
 ├── Makefile              # Build system
 ├── README.md            # This file
 ├── SPEC.md              # Detailed specification
+├── mpc.1                # Man page for MPC itself
 ├── src/
 │   └── main.c           # Main compiler implementation
 ├── examples/            # Example man pages
@@ -516,6 +517,7 @@ MIT License - Because documentation should be free.
 
 ## See Also
 
+- `mpc(1)` - Complete man page documentation for MPC itself
 - [Ollama](https://ollama.ai/) - Local LLM runtime
 - [Google AI Studio](https://aistudio.google.com/) - Get Gemini API keys
 - [Homebrew](https://brew.sh/) - Package manager for macOS
