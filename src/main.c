@@ -234,7 +234,7 @@ int parse_manpage(const char *filename, manpage_t *manpage) {
     free(current_section);
     fclose(fp);
     
-    printf("✓ Parsed man page: %s (%d sections, %d options, %d examples)\n", 
+    printf("Parsed man page: %s (%d sections, %d options, %d examples)\n", 
            manpage->name ? manpage->name : "unknown",
            manpage->section_count, manpage->option_count, manpage->example_count);
     
@@ -440,7 +440,7 @@ char* call_llm(const char *prompt, const config_t *config) {
     free(response.data);
     
     if (generated_code) {
-        printf("✓ Generated %zu bytes of code\n", strlen(generated_code));
+        printf("Generated %zu bytes of code\n", strlen(generated_code));
         return generated_code;
     }
     
@@ -650,7 +650,7 @@ int main(int argc, char *argv[]) {
     
 
     
-    printf("🚀 Man Page Compiler v1.0\n");
+    printf("Man Page Compiler v1.0\n");
     printf("Input: %s\n", config.input_file);
     printf("Output: %s\n", config.output_file);
     printf("Target: %s\n", config.target_language);
