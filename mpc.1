@@ -29,8 +29,7 @@ Specify output executable name. Default is the input filename without
 the .1 extension.
 .TP
 .BR \-m " " \fIMODEL\fR
-Specify LLM model to use. Default is \fIcodellama:7b\fR for local Ollama,
-or \fIgemini-1.5-flash\fR when using --remote.
+Specify the Ollama model to use. Default is \fIgemma4\fR.
 .TP
 .BR \-u " " \fIURL\fR
 Specify Ollama server URL. Default is \fIhttp://localhost:11434\fR.
@@ -49,17 +48,8 @@ and detailed compilation feedback.
 Enable debug mode. Keeps intermediate files and shows extracted code
 for inspection.
 .TP
-.BR \-\-remote
-Use remote Gemini API instead of local Ollama. Requires GEMINI_API_KEY
-environment variable to be set.
-.TP
 .BR \-h ", " \-\-help
 Display help information and exit.
-.SH ENVIRONMENT
-.TP
-.B GEMINI_API_KEY
-Required when using the --remote flag. Contains the API key for
-Google's Gemini API. Get one from https://aistudio.google.com/
 .SH FILES
 .TP
 .I ./bin/mpc
@@ -78,7 +68,7 @@ $ mpc examples/hello.1
 Parsing man page...
 Parsed man page: hello (6 sections, 3 options, 0 examples)
 Generating structured specification... (attempt 1/3)
-Generating code via codellama:7b...
+Generating code via gemma4...
 Generated 947 bytes of code
 Extracting code from LLM response...
 Compiling to executable... (attempt 1/3)
@@ -106,11 +96,10 @@ $ mpc -m deepseek-coder examples/count.1
 .RE
 .fi
 .PP
-Use remote Gemini API with increased retries:
+Use an Ollama server on another host with increased retries:
 .nf
 .RS
-$ export GEMINI_API_KEY=your_api_key_here
-$ mpc --remote -r 5 -m gemini-1.5-pro examples/calculator.1
+$ mpc -u http://gpu-box:11434 -r 5 examples/calculator.1
 .RE
 .fi
 .PP
@@ -138,9 +127,6 @@ may produce the following messages:
 .TP
 .B "Error: Cannot open file INPUT.1: No such file or directory"
 The specified input file does not exist or is not readable.
-.TP
-.B "Error: GEMINI_API_KEY environment variable not set"
-The --remote flag was used but no API key was provided.
 .TP
 .B "Error: LLM request failed: Connection refused"
 Cannot connect to the Ollama server. Make sure it's running with 'ollama serve'.
@@ -173,7 +159,7 @@ libcurl development headers
 .IP \(bu 4
 jansson JSON library
 .IP \(bu 4
-Either Ollama (local) or Gemini API key (remote)
+Ollama (local or reachable over the network)
 .SH BUGS
 Complex man pages with intricate logic may require multiple retry attempts.
 The quality of generated code depends on the clarity and completeness of
@@ -196,5 +182,3 @@ Licensed under the BSD 3-Clause License.
 Project homepage: https://github.com/yourusername/man-page-compiler
 .PP
 Ollama documentation: https://ollama.ai/
-.PP
-Google AI Studio: https://aistudio.google.com/

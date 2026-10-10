@@ -55,19 +55,12 @@ MPC is implemented in **portable C** (~500 lines) optimized for **macOS as the p
   - Code quality requirements
 
 ### 3. LLM Interface (`call_llm()`)
-**Dual-mode operation:**
+**Backend: Ollama**
 
-#### Local Mode (Ollama)
-- **Endpoint**: `http://localhost:11434/api/generate`
+- **Endpoint**: `http://localhost:11434/api/generate` (override with `-u`)
 - **Format**: Ollama JSON API
-- **Models**: `codellama:7b`, `deepseek-coder:6.7b`, etc.
+- **Models**: `gemma4`, `deepseek-coder:6.7b`, etc.
 - **Benefits**: Privacy, no API costs, offline operation
-
-#### Remote Mode (Gemini API)
-- **Endpoint**: `https://generativelanguage.googleapis.com/v1beta/models/{model}:generateContent`
-- **Authentication**: `GEMINI_API_KEY` environment variable
-- **Models**: `gemini-1.5-flash`, `gemini-1.5-pro`
-- **Benefits**: Latest models, no local setup required
 
 ### 4. Code Extraction (`extract_code()`)
 - **Input**: Raw LLM response (often with markdown formatting)
@@ -192,7 +185,7 @@ making them excellent at generating clean, portable C code.
 ```json
 POST /api/generate
 {
-  "model": "codellama:7b",
+  "model": "gemma4",
   "prompt": "generated_specification_text",
   "stream": false
 }
@@ -201,29 +194,6 @@ Response:
 {
   "response": "generated_code_text",
   "done": true
-}
-```
-
-### Gemini API Integration
-```json
-POST /v1beta/models/gemini-1.5-flash:generateContent?key=API_KEY
-{
-  "contents": [{
-    "parts": [{
-      "text": "generated_specification_text"
-    }]
-  }]
-}
-
-Response:
-{
-  "candidates": [{
-    "content": {
-      "parts": [{
-        "text": "generated_code_text"
-      }]
-    }
-  }]
 }
 ```
 
@@ -237,16 +207,10 @@ Options:
   -o OUTPUT      Output executable name
   -m MODEL       LLM model name
   -u URL         Ollama server URL
-  --remote       Use remote Gemini API
   -r RETRIES     Max retry attempts with error feedback (default: 3)
   -v             Verbose output
   -d             Debug mode
   -h             Show help
-```
-
-### Environment Variables
-```bash
-GEMINI_API_KEY    # Required for --remote mode
 ```
 
 ### Configuration Structure
@@ -257,8 +221,6 @@ typedef struct {
     char *target_language; // Always "c"
     char *llm_model;       // Model identifier
     char *llm_url;         // API endpoint
-    char *api_key;         // Authentication
-    int use_remote;        // Local vs remote LLM
     int verbose;           // Detailed output
     int debug;             // Debug information
     int max_retries;       // Retry attempts with error feedback
@@ -399,9 +361,6 @@ echo "test" | ./simple       # Test with input
 
 ### API Security
 - **Local Ollama**: No network exposure by default
-- **Remote APIs**: HTTPS only, API key protection
-- **Credential handling**: Environment variable isolation
-- **Rate limiting**: Respect API quotas and limits
 
 ## Deployment & Distribution
 

@@ -9,7 +9,7 @@ That single command:
 - Installs required libraries (libcurl, jansson) if possible
 - Installs / updates Ollama (if local backend desired)
 - Builds `./bin/mpc`
-- Pulls a default model (`codellama:7b`)
+- Pulls a default model (`gemma4`)
 - Runs a quick generation sanity test
 
 If that worked, you’re done. This file covers optional / manual details.
@@ -24,13 +24,9 @@ Core build-time:
 - jansson (development headers)
 - pkg-config (recommended)
 
-Local LLM backend (optional):
-- Ollama with a code-capable model (e.g. `codellama:7b`, `deepseek-coder`)
-
-Remote LLM backend (optional):
-- Google Gemini API key (`GEMINI_API_KEY`)
-
-You can skip Ollama entirely if you intend to use `--remote`.
+LLM backend:
+- Ollama with a code-capable model (e.g. `gemma4`, `deepseek-coder`)
+- It can run locally or on another host (point at it with `-u URL`)
 
 ---
 
@@ -74,7 +70,7 @@ If `pkg-config` is missing, the Makefile’s detection may fail—install it.
 
 ```
 ollama serve            # start daemon
-ollama pull codellama:7b
+ollama pull gemma4
 ./bin/mpc examples/simple.1
 ```
 
@@ -86,25 +82,10 @@ mpc -m deepseek-coder examples/simple.1
 
 ---
 
-## 4. Remote Backend (Gemini)
-
-Get an API key (Google AI Studio), then:
-```
-export GEMINI_API_KEY=your_key
-mpc --remote examples/simple.1
-```
-Pick another remote model:
-```
-mpc --remote -m gemini-1.5-pro examples/simple.1
-```
-
----
-
-## 5. Environment Variables
+## 4. Environment Variables
 
 | Variable          | Purpose                              | When Needed              |
 |-------------------|--------------------------------------|--------------------------|
-| GEMINI_API_KEY    | Auth for remote Gemini backend       | Using `--remote`         |
 | MPC_MODEL         | Default model override               | Optional convenience     |
 | MPC_OLLAMA_URL    | Non-default Ollama base URL          | Custom deployments       |
 
@@ -112,7 +93,7 @@ All have CLI overrides; environment is optional.
 
 ---
 
-## 6. Directory Layout (Key Paths)
+## 5. Directory Layout (Key Paths)
 
 | Path            | Description                         |
 |-----------------|-------------------------------------|
@@ -126,7 +107,7 @@ All have CLI overrides; environment is optional.
 
 ---
 
-## 7. Verifying a Clean Install
+## 6. Verifying a Clean Install
 
 ```
 ./configure
@@ -142,7 +123,7 @@ make clean && make
 
 ---
 
-## 8. Common Manual Checks
+## 7. Common Manual Checks
 
 Check libs:
 ```
@@ -161,7 +142,7 @@ ollama list
 
 ---
 
-## 9. Debug & Retry
+## 8. Debug & Retry
 
 Retry with error feedback:
 ```
@@ -175,15 +156,15 @@ ls build/
 
 ---
 
-## 10. Minimal / Air‑Gapped Mode
+## 9. Minimal / Air‑Gapped Mode
 
-If you cannot install Ollama or access remote APIs:
-- Use remote-only (if network but no local model): just export `GEMINI_API_KEY`.
+If you cannot install Ollama locally:
+- Point at an Ollama instance on another machine with `-u http://host:11434`.
 - If fully offline: you must have Ollama + model already cached; otherwise generation cannot proceed.
 
 ---
 
-## 11. Uninstall / Clean
+## 10. Uninstall / Clean
 
 Remove build outputs:
 ```
@@ -200,14 +181,13 @@ sudo rm -f /usr/local/bin/mpc
 
 ---
 
-## 12. Failure Modes Summary
+## 11. Failure Modes Summary
 
 | Symptom                            | Fix Hint                                |
 |-----------------------------------|-----------------------------------------|
 | “libcurl not found”               | Install dev package / rerun configure   |
 | “jansson not found”               | Same as above                           |
 | Hangs contacting Ollama           | Ensure `ollama serve` running           |
-| Remote 401 error                  | `echo $GEMINI_API_KEY` set?             |
 | Generated code won’t compile      | Increase `-r`, add `-d`, refine man page|
 | Poor behavior / logic off         | Add explicit EXAMPLES + exit codes      |
 
@@ -215,7 +195,7 @@ See `TROUBLESHOOTING.md` for more.
 
 ---
 
-## 13. Writing Better Man Pages (Impact on Output)
+## 12. Writing Better Man Pages (Impact on Output)
 
 Good:
 ```
@@ -234,13 +214,13 @@ Include:
 
 ---
 
-## 14. Philosophy Recap (Why This File Exists)
+## 13. Philosophy Recap (Why This File Exists)
 
 README stays lean. This file absorbs platform noise, optional procedures, and deeper operational notes so the core message (docs → code) remains uncluttered.
 
 ---
 
-## 15. If All Else Fails
+## 14. If All Else Fails
 
 Quick triage script:
 ```

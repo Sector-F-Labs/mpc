@@ -1,15 +1,17 @@
 # Makefile for Man Page Compiler (macOS/C Implementation)
 
 CC = cc
-CFLAGS = -Wall -Wextra -std=c99 -O2 `pkg-config --cflags libcurl jansson`
+CFLAGS = -Wall -Wextra -std=c99 -O2 -D_POSIX_C_SOURCE=200809L `pkg-config --cflags libcurl jansson`
 LIBS = `pkg-config --libs libcurl jansson`
 
 # Target executable
 TARGET = bin/mpc
 
-# Source files
-SOURCES = src/main.c
-OBJECTS = $(SOURCES:.c=.o)
+# Source and object files
+OBJDIR = build/obj
+SOURCES = $(wildcard src/*.c)
+OBJECTS = $(SOURCES:src/%.c=$(OBJDIR)/%.o)
+DEPS = $(OBJECTS:.o=.d)
 
 # Default target
 all: $(TARGET)
@@ -20,8 +22,11 @@ $(TARGET): $(OBJECTS)
 	$(CC) $(OBJECTS) -o $(TARGET) $(LIBS)
 
 # Compile source files
-src/%.o: src/%.c
-	$(CC) $(CFLAGS) -c $< -o $@
+$(OBJDIR)/%.o: src/%.c
+	@mkdir -p $(OBJDIR)
+	$(CC) $(CFLAGS) -MMD -MP -c $< -o $@
+
+-include $(DEPS)
 
 # Install system dependencies
 deps:
@@ -73,7 +78,7 @@ debug: clean $(TARGET)
 
 # Clean build artifacts
 clean: clean-examples
-	rm -f $(OBJECTS) $(TARGET)
+	rm -f $(OBJECTS) $(DEPS) $(TARGET)
 	rm -rf build/ src/build/
 
 # Clean example binaries (but keep mpc)
@@ -120,13 +125,9 @@ help:
 	@echo "  make test           # Test with example"
 	@echo "  make examples       # Compile all examples to ./bin"
 	@echo "  mpc examples/simple.1            # Generate C code and compile"
-	@echo "  mpc --remote -m gemini-1.5-flash examples/simple.1  # Use remote Gemini API"
+	@echo "  mpc -u http://gpu-box:11434 examples/simple.1  # Use a remote Ollama host"
 	@echo ""
-	@echo "Environment variables:"
-	@echo "  GEMINI_API_KEY      # Required for --remote flag"
-	@echo ""
-	@echo "LLM backends:"
-	@echo "  Local:  brew install ollama && ollama pull codellama:7b"
-	@echo "  Remote: Get API key from https://aistudio.google.com/"
+	@echo "LLM backend:"
+	@echo "  brew install ollama && ollama pull gemma4"
 
 .PHONY: all deps check-deps test examples debug clean clean-examples install uninstall help

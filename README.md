@@ -61,14 +61,13 @@ That single command:
 
 * Installs prerequisites
 * Builds MPC
-* Fetches a default local model (`codellama:7b` via Ollama)
+* Fetches a default local model (`gemma4` via Ollama)
 * Runs a sanity check
 
-Remote instead of local?
+Ollama on another machine?
 
 ```bash
-export GEMINI_API_KEY=your_key
-mpc --remote examples/simple.1
+mpc -u http://gpu-box:11434 examples/simple.1
 ```
 
 See `SETUP.md` for optional platform-specific notes.

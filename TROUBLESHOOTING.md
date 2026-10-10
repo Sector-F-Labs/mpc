@@ -22,13 +22,12 @@ make clean && make
 **Ollama connection fails:**
 ```bash
 ollama serve                    # Start server
-ollama pull codellama:7b       # Download model
+ollama pull gemma4       # Download model
 ```
 
-**Use remote API instead:**
+**Ollama on another host:**
 ```bash
-export GEMINI_API_KEY=your_key
-mpc --remote examples/simple.1
+mpc -u http://gpu-box:11434 examples/simple.1
 ```
 
 ## Code Generation Issues
@@ -37,7 +36,6 @@ mpc --remote examples/simple.1
 ```bash
 mpc -r 5 -v examples/simple.1  # Retry with error feedback
 mpc -m deepseek-coder examples/simple.1  # Try different model
-mpc --remote examples/simple.1  # Use remote API
 ```
 
 **Generated program doesn't work:**
