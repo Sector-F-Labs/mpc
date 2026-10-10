@@ -1,18 +1,9 @@
-# Build artifacts
-build/
-src/build/
+# Build output: mpc itself (bin/), objects (build/obj/), generated C (build/)
+/bin/
+/build/
 *.o
+*.d
 
-# Main binary (built to bin/)
-bin/mpc
-
-# Generated example binaries
-bin/calculator
-bin/count
-bin/hello
-bin/simple
-
-# Legacy binaries (old location)
-mpc
-simple_test
-hello_test
+# Without -o, mpc writes the compiled program next to its man page
+/examples/*
+!/examples/*.1
